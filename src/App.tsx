@@ -12,27 +12,6 @@ const ESTADO_INICIAL: GameState = {
   vitoria: false,
 };
 
-const CHAVE_LOCALSTORAGE = "jogo-sobrevivencia";
-
-// Roda 1 vez, antes do primeiro render, pra já iniciar o estado com o save
-// existente (se houver). Evita o efeito separado de "carregar", que corria
-// numa condição de corrida com o efeito de "salvar" no StrictMode do dev.
-function carregarEstadoSalvo(): GameState {
-  const dadosSalvos = localStorage.getItem(CHAVE_LOCALSTORAGE);
-
-  if (!dadosSalvos) {
-    return ESTADO_INICIAL;
-  }
-
-  try {
-    return JSON.parse(dadosSalvos);
-  } catch {
-    return ESTADO_INICIAL;
-  }
-}
-
-// Função pura, fora do componente: recebe o estado já calculado por uma ação
-// e decide se o jogo deve terminar (derrota ou vitória).
 function verificarFimDeJogo(estado: GameState): GameState {
   if (estado.vida <= 0 || estado.energia <= 0) {
     return {
@@ -53,10 +32,25 @@ function verificarFimDeJogo(estado: GameState): GameState {
   return estado;
 }
 
+const CHAVE_LOCALSTORAGE = "jogo-sobrevivencia";
+
+function carregarEstadoSalvo(): GameState {
+  const dadosSalvos = localStorage.getItem(CHAVE_LOCALSTORAGE);
+
+  if (!dadosSalvos) {
+    return ESTADO_INICIAL;
+  }
+
+  try {
+    return JSON.parse(dadosSalvos);
+  } catch {
+    return ESTADO_INICIAL;
+  }
+}
+
 function App() {
   const [gameState, setGameState] = useState<GameState>(carregarEstadoSalvo);
 
-  // Roda toda vez que gameState mudar: salva o estado atual.
   useEffect(() => {
     localStorage.setItem(CHAVE_LOCALSTORAGE, JSON.stringify(gameState));
   }, [gameState]);
